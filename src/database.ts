@@ -150,7 +150,7 @@ class DatabaseService {
     let query = `
       SELECT * FROM matches
       ${whereClause}
-      ORDER BY timestamp DESC
+      ORDER BY timestamp ASC
     `
 
     if (limit) {

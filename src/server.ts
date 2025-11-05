@@ -142,7 +142,7 @@ export class FootballAPIServer {
           description: 'Get paginated list of matches',
           parameters: {
             page: 'Page number (default: 1)',
-            limit: 'Items per page (default: 20, max: 100)',
+            limit: 'Items per page (default: 999, max: 999)',
             status: 'Filter by status (live, upcoming, finished, unknown)',
             league: 'Filter by league name',
           },
@@ -226,7 +226,7 @@ export class FootballAPIServer {
     // Parse and validate query parameters
     const params = parseQueryParams(url, {
       page: 1,
-      limit: 20,
+      limit: 999,
     })
 
     const errors = validateQueryParams(params)

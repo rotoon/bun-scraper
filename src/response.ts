@@ -176,10 +176,10 @@ export function validateQueryParams(
     })
   }
 
-  if (params.limit && (params.limit < 1 || params.limit > 100)) {
+  if (params.limit && (params.limit < 1 || params.limit > 999)) {
     errors.push({
       field: 'limit',
-      message: 'Limit must be between 1 and 100',
+      message: 'Limit must be between 1 and 999',
       code: 'INVALID_LIMIT',
     })
   }

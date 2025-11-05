@@ -1,0 +1,26 @@
+{
+  "name": "bun-scraper",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "cheerio": "^1.1.2"
+  },
+  "scripts": {
+    "start": "bun index.ts",
+    "dev": "bun --watch index.ts",
+    "build": "bun build index.ts --target bun --outdir ./dist",
+    "api": "bun index.ts",
+    "docs": "bun index.ts",
+    "test-api": "curl -X POST http://localhost:3000/cron",
+    "test-matches": "curl http://localhost:3000/api/matches?limit=5",
+    "test-live": "curl http://localhost:3000/api/matches/live",
+    "test-health": "curl http://localhost:3000/health"
+  }
+}

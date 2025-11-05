@@ -1,0 +1,14 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+# รันทุก 30 นาที - Railway จะส่ง POST request ไปที่ /cron endpoint
+cronSchedule = "*/30 * * * *"
+# หรือรันทุกชั่วโมง: "0 * * * *"
+# หรือรันทุกวันเวลา 20:00: "0 20 * * *"
+
+[deploy.healthcheckPath] = "/health"
+
+[deploy.healthcheckTimeout] = 300
+[deploy.restartPolicyType] = "ON_FAILURE"
+[deploy.restartPolicyMaxRetries] = 3

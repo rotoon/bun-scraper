@@ -7,22 +7,35 @@ export class FootballService {
   // Get matches with filtering and pagination
   async getMatches(
     page: number = 1,
-    limit: number = 20,
+    limit: number = 999,
     status?: MatchStatus,
     league?: string
   ) {
-    const offset = (page - 1) * limit
-    const { matches, total } = db.getMatches(limit, status, league, offset)
+    const normalizedPage = Number.isFinite(page)
+      ? Math.max(1, Math.min(Math.floor(page), 1000))
+      : 1
+    const normalizedLimitCandidate = Number.isFinite(limit)
+      ? Math.floor(limit)
+      : 999
+    const normalizedLimit = Math.max(1, Math.min(normalizedLimitCandidate, 999))
+
+    const offset = (normalizedPage - 1) * normalizedLimit
+    const { matches, total } = db.getMatches(
+      normalizedLimit,
+      status,
+      league,
+      offset
+    )
 
     return {
       matches,
       pagination: {
-        page,
-        limit,
+        page: normalizedPage,
+        limit: normalizedLimit,
         total,
-        totalPages: Math.ceil(total / limit),
-        hasNext: offset + limit < total,
-        hasPrev: page > 1,
+        totalPages: Math.ceil(total / normalizedLimit),
+        hasNext: offset + normalizedLimit < total,
+        hasPrev: normalizedPage > 1,
       },
       total,
     }
@@ -148,7 +161,7 @@ export class FootballService {
   // Get unique leagues
   async getLeagues(): Promise<string[]> {
     // This would require adding a distinct query to the database module
-    const { matches } = db.getMatches(1000) // Get recent matches to determine leagues
+    const { matches } = db.getMatches(999) // Get recent matches to determine leagues
     const leagues = [...new Set(matches.map((match) => match.league))]
     return leagues.sort()
   }

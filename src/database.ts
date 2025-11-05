@@ -121,6 +121,12 @@ class DatabaseService {
     league?: string,
     offset: number = 0
   ): { matches: Match[]; total: number } {
+    const normalizedLimit =
+      typeof limit === 'number' && Number.isFinite(limit)
+        ? Math.max(1, Math.min(Math.floor(limit), 999))
+        : undefined
+    const normalizedOffset = Math.max(0, Math.floor(offset))
+
     let whereClause = ''
     const params: any[] = []
 
@@ -153,8 +159,8 @@ class DatabaseService {
       ORDER BY timestamp ASC
     `
 
-    if (limit) {
-      query += ` LIMIT ${limit} OFFSET ${offset}`
+    if (normalizedLimit !== undefined) {
+      query += ` LIMIT ${normalizedLimit} OFFSET ${normalizedOffset}`
     }
 
     const rows = this.db.query(query).all(params as any) as any[]

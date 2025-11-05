@@ -7,7 +7,7 @@ export class FootballService {
   // Get matches with filtering and pagination
   async getMatches(
     page: number = 1,
-    limit: number = 20,
+    limit: number = 999,
     status?: MatchStatus,
     league?: string
   ) {

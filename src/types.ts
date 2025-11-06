@@ -83,7 +83,7 @@ export interface MatchQueryParams {
   dateTo?: string;
   team?: string;
   sort?: MatchSortField;
-  order?: SortOrder;
+  order?: SortOrder; // Default: 'asc'
 }
 
 // Database Query Result

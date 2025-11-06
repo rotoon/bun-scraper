@@ -1,15 +1,15 @@
-import { footballService } from '../services';
 import {
-  successResponse,
   badRequestResponse,
   internalServerErrorResponse,
   notModifiedResponse,
-  tooManyRequestsWithRateLimitResponse,
   parseQueryParams,
+  successResponse,
+  tooManyRequestsWithRateLimitResponse,
   validateQueryParams,
 } from '../response';
-import { cacheManager, getMatchCacheTTL } from '../utils/cache';
+import { footballService } from '../services';
 import type { MatchQueryParams } from '../types';
+import { cacheManager, getMatchCacheTTL } from '../utils/cache';
 
 export class MatchesController {
   async handleGetMatches(req: Request, url: URL): Promise<Response> {
@@ -34,7 +34,7 @@ export class MatchesController {
       page: 1,
       limit: 20,
       sort: 'date',
-      order: 'desc',
+      order: 'asc',
     }) as MatchQueryParams;
 
     const errors = validateQueryParams(params);

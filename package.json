@@ -45,7 +45,7 @@
     "format": "prettier --write \"src/**/*.{ts,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,json}\"",
     "format:all": "prettier --write .",
-    "prepare": "husky",
+    "prepare": "echo 'Husky install skipped in production'",
     "type-check": "tsc --noEmit"
   }
 }

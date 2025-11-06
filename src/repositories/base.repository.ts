@@ -1,4 +1,4 @@
-import type { Database } from 'bun:sqlite';
+import type { Database, SQLQueryBindings } from 'bun:sqlite';
 
 // Generic interface for database entities
 export interface BaseEntity {
@@ -90,7 +90,7 @@ export abstract class BaseRepository<T extends BaseEntity>
 
       const result = this.db.run(
         `INSERT INTO ${this.tableName} (${fields}) VALUES (${placeholders})`,
-        values,
+        values as SQLQueryBindings[],
       );
 
       if (!result.lastInsertRowid) {
@@ -138,7 +138,7 @@ export abstract class BaseRepository<T extends BaseEntity>
       const { whereClause, params } = this.buildWhereClause(filters);
       const row = this.db
         .query(`SELECT * FROM ${this.tableName} ${whereClause}`)
-        .get(params);
+        .get(...params);
       return row ? this.mapRowToEntity(row) : null;
     } catch (error) {
       throw new RepositoryError(
@@ -155,12 +155,12 @@ export abstract class BaseRepository<T extends BaseEntity>
   ): Promise<T[]> {
     try {
       let query = `SELECT * FROM ${this.tableName}`;
-      const params: any[] = [];
+      const params: SQLQueryBindings[] = [];
 
       if (filters && Object.keys(filters).length > 0) {
-        const { whereClause, whereParams } = this.buildWhereClause(filters);
+        const { whereClause, params } = this.buildWhereClause(filters);
         query += ` ${whereClause}`;
-        params.push(...whereParams);
+        params.push(...params);
       }
 
       if (options.orderBy) {
@@ -175,7 +175,7 @@ export abstract class BaseRepository<T extends BaseEntity>
         }
       }
 
-      const rows = this.db.query(query).all(params);
+      const rows = this.db.query(query).all(...params);
       return rows.map(row => this.mapRowToEntity(row));
     } catch (error) {
       throw new RepositoryError(
@@ -201,7 +201,7 @@ export abstract class BaseRepository<T extends BaseEntity>
 
       const result = this.db.run(
         `UPDATE ${this.tableName} SET ${fields} WHERE id = ?`,
-        [...values, id],
+        [...values, id] as SQLQueryBindings[],
       );
 
       if (result.changes === 0) {
@@ -228,7 +228,7 @@ export abstract class BaseRepository<T extends BaseEntity>
     try {
       const result = this.db.run(
         `DELETE FROM ${this.tableName} WHERE id = ?`,
-        id,
+        id as unknown as SQLQueryBindings[],
       );
       return result.changes > 0;
     } catch (error) {
@@ -287,11 +287,11 @@ export abstract class BaseRepository<T extends BaseEntity>
         .join(', ');
       const values = Object.values(row);
 
-      const { whereClause, whereParams } = this.buildWhereClause(filters);
+      const { whereClause, params } = this.buildWhereClause(filters);
 
       const result = this.db.run(
         `UPDATE ${this.tableName} SET ${fields} ${whereClause}`,
-        [...values, ...whereParams],
+        [...values, ...params] as SQLQueryBindings[],
       );
 
       return result.changes;
@@ -324,15 +324,17 @@ export abstract class BaseRepository<T extends BaseEntity>
   async count(filters?: Partial<T>): Promise<number> {
     try {
       let query = `SELECT COUNT(*) as count FROM ${this.tableName}`;
-      const params: any[] = [];
+      const params: SQLQueryBindings[] = [];
 
       if (filters && Object.keys(filters).length > 0) {
-        const { whereClause, whereParams } = this.buildWhereClause(filters);
+        const { whereClause, params } = this.buildWhereClause(filters);
         query += ` ${whereClause}`;
-        params.push(...whereParams);
+        params.push(...params);
       }
 
-      const result = this.db.query(query).get(params) as { count: number };
+      const result = this.db.query(query).get(...params) as {
+        count: number;
+      };
       return result.count;
     } catch (error) {
       throw new RepositoryError(
@@ -353,15 +355,15 @@ export abstract class BaseRepository<T extends BaseEntity>
   // Helper method to build WHERE clause
   protected buildWhereClause(filters: Partial<T>): {
     whereClause: string;
-    params: any[];
+    params: SQLQueryBindings[];
   } {
     const conditions: string[] = [];
-    const params: any[] = [];
+    const params: SQLQueryBindings[] = [];
 
     for (const [key, value] of Object.entries(filters)) {
       if (value !== undefined && value !== null) {
         conditions.push(`${key} = ?`);
-        params.push(value);
+        params.push(value as SQLQueryBindings);
       }
     }
 

@@ -35,9 +35,13 @@ export class FootballAPIServer {
       },
     });
 
+    // eslint-disable-next-line no-console
     console.log(`🚀 Football API Server v2.0`);
+    // eslint-disable-next-line no-console
     console.log(`📍 Server running on http://localhost:${this.port}`);
+    // eslint-disable-next-line no-console
     console.log(`📖 API Documentation: http://localhost:${this.port}/docs`);
+    // eslint-disable-next-line no-console
     console.log(`🏥 Health Check: http://localhost:${this.port}/health`);
   }
 

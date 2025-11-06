@@ -41,7 +41,7 @@ async function runCronJob() {
 
   // Level 1: Rate limiting - ไม่ให้รันบ่อยเกินไป
   if (now - lastCronRun < MIN_CRON_INTERVAL) {
-    console.log(
+    console.warn(
       `⏭️ Skipping cron job - too soon since last run (${Math.round((now - lastCronRun) / 60000)} min ago)`,
     );
     return;
@@ -49,13 +49,13 @@ async function runCronJob() {
 
   // Level 2: ตรวจสอบว่า cron กำลังรันอยู่หรือไม่
   if (cronStatus.isRunning) {
-    console.log('⏳ Previous cron job still running, skipping this run');
+    console.warn('⏳ Previous cron job still running, skipping this run');
     return;
   }
 
   // Level 2: Backoff strategy - ถ้า fail ติดกันเกินไป
   if (cronStatus.consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
-    console.log(
+    console.error(
       `🚫 Too many consecutive failures (${cronStatus.consecutiveFailures}), skipping next runs`,
     );
 
@@ -63,7 +63,7 @@ async function runCronJob() {
     setTimeout(
       () => {
         cronStatus.consecutiveFailures = 0;
-        console.log('🔄 Reset failure counter, will try again');
+        console.warn('🔄 Reset failure counter, will try again');
       },
       60 * 60 * 1000,
     );
@@ -76,9 +76,11 @@ async function runCronJob() {
   cronStatus.totalRuns++;
 
   try {
+    // eslint-disable-next-line no-console
     console.log(
       `[${new Date().toISOString()}] 🕐 Running scheduled cron job #${cronStatus.totalRuns}...`,
     );
+    // eslint-disable-next-line no-console
     console.log(
       `📈 Current stats: ${cronStatus.successfulRuns}/${cronStatus.totalRuns} successful (${Math.round((cronStatus.successfulRuns / cronStatus.totalRuns) * 100)}%)`,
     );
@@ -86,7 +88,9 @@ async function runCronJob() {
     const result = await footballService.executeCronJob();
 
     if (result.success) {
+      // eslint-disable-next-line no-console
       console.log(`✅ Cron job successful: ${result.message}`);
+      // eslint-disable-next-line no-console
       console.log(
         `📊 Stats: ${result.matchesScraped} scraped, ${result.inserted} inserted, ${result.deleted} deleted (took ${result.executionTime}ms)`,
       );
@@ -118,27 +122,37 @@ async function runCronJob() {
 
 // Level 2: Enhanced cron status logger
 function logCronStatus() {
+  // eslint-disable-next-line no-console
   console.log('📋 Cron Job Status:');
+  // eslint-disable-next-line no-console
   console.log(
     `   Last run: ${cronStatus.lastRun ? cronStatus.lastRun.toISOString() : 'Never'}`,
   );
+  // eslint-disable-next-line no-console
   console.log(`   Last success: ${cronStatus.lastSuccess}`);
+  // eslint-disable-next-line no-console
   console.log(`   Consecutive failures: ${cronStatus.consecutiveFailures}`);
+  // eslint-disable-next-line no-console
   console.log(
     `   Success rate: ${cronStatus.totalRuns > 0 ? Math.round((cronStatus.successfulRuns / cronStatus.totalRuns) * 100) : 0}% (${cronStatus.successfulRuns}/${cronStatus.totalRuns})`,
   );
+  // eslint-disable-next-line no-console
   console.log(`   Currently running: ${cronStatus.isRunning}`);
+  // eslint-disable-next-line no-console
   console.log(`   Next run in: ${CRON_INTERVAL / 60000} minutes`);
 }
 
 // Start cron job
 function startCronJob() {
+  // eslint-disable-next-line no-console
   console.log(
     `⏰ Starting production-ready cron job every ${CRON_INTERVAL / 60000} minutes...`,
   );
+  // eslint-disable-next-line no-console
   console.log(
     `🛡️ Rate limiting: minimum ${MIN_CRON_INTERVAL / 60000} minutes between runs`,
   );
+  // eslint-disable-next-line no-console
   console.log(
     `🚨 Failure threshold: ${MAX_CONSECUTIVE_FAILURES} consecutive failures`,
   );
@@ -148,12 +162,13 @@ function startCronJob() {
 
   // Run immediately on startup (with delay)
   setTimeout(() => {
+    // eslint-disable-next-line no-console
     console.log('🚀 Running first cron job on startup...');
-    runCronJob();
+    void runCronJob();
   }, 5000); // Wait 5 seconds after server starts
 
   // Then run at specified interval
-  setInterval(runCronJob, CRON_INTERVAL);
+  setInterval(() => void runCronJob(), CRON_INTERVAL);
 
   // Log status every hour
   setInterval(logCronStatus, 60 * 60 * 1000);
@@ -161,12 +176,14 @@ function startCronJob() {
 
 // Handle graceful shutdown
 process.on('SIGINT', () => {
+  // eslint-disable-next-line no-console
   console.log('\n🛑 Received SIGINT, shutting down gracefully...');
   server.stop();
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
+  // eslint-disable-next-line no-console
   console.log('\n🛑 Received SIGTERM, shutting down gracefully...');
   server.stop();
   process.exit(0);

@@ -82,10 +82,11 @@ curl "http://localhost:3000/api/v1/matches/search?q=Premier%20League"
 ## 🛠️ Technology Stack
 
 - **Runtime**: Bun (High-performance JavaScript runtime)
-- **Language**: TypeScript
+- **Language**: TypeScript with strict mode
 - **Database**: SQLite with custom ORM
 - **Web Server**: Built-in Bun server
 - **Scraping**: Cheerio for HTML parsing
+- **Code Quality**: ESLint, Prettier, Husky pre-commit hooks
 - **Deployment**: Railway with automated cron jobs
 - **Caching**: In-memory cache with ETag support
 - **Rate Limiting**: Token bucket algorithm
@@ -254,6 +255,43 @@ docker build -t football-scraper .
 docker run -p 3000:3000 football-scraper
 ```
 
+## 🔧 Code Quality & Development
+
+This project uses industry-standard tools to ensure code quality and consistency.
+
+### Linting & Formatting
+
+```bash
+# Run ESLint
+bun run lint
+
+# Auto-fix ESLint issues
+bun run lint:fix
+
+# Run ESLint quietly (errors only)
+bun run lint:quiet
+
+# Check code formatting
+bun run format:check
+
+# Format code with Prettier
+bun run format
+
+# Format all files (including docs)
+bun run format:all
+
+# Type checking
+bun run type-check
+```
+
+### Pre-commit Hooks
+
+The project uses Husky and lint-staged for automated code quality checks:
+
+- **Automatic**: ESLint fixes and Prettier formatting on commit
+- **Blocking**: Commits are blocked if linting fails
+- **Efficient**: Only staged files are processed
+
 ### Local Development
 
 ```bash
@@ -266,9 +304,6 @@ bun start
 
 # Run tests
 bun test
-
-# Lint code
-bun run lint
 ```
 
 ## 📊 Performance
@@ -358,14 +393,41 @@ We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md)
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests
-5. Run the test suite
-6. Submit a pull request
+4. **Run linting**: `bun run lint:fix`
+5. **Format code**: `bun run format`
+6. Add tests
+7. Run the test suite
+8. Submit a pull request
+
+### Code Style
+
+This project follows strict code style standards enforced by ESLint and Prettier:
+
+- **TypeScript**: Strict mode enabled
+- **Formatting**: 2-space indentation, single quotes, trailing commas
+- **Imports**: Organized and consistent
+- **Console logs**: Only `console.warn` and `console.error` allowed
+- **Variables**: Use `const`/`let`, prefer `const` when possible
+
+### IDE Setup
+
+For the best development experience, use VS Code with the recommended extensions:
+
+```bash
+# Install recommended extensions
+code --install-extension esbenp.prettier-vscode
+code --install-extension dbaeumer.vscode-eslint
+code --install-extension ms-vscode.vscode-typescript-next
+```
+
+The project includes `.vscode/settings.json` for automatic configuration.
 
 ## 📝 Changelog
 
 ### v2.0.0 (Current)
 
+- ✅ **Code Quality** - ESLint, Prettier, and pre-commit hooks setup
+- ✅ **TypeScript Strict Mode** - Enhanced type safety and error prevention
 - ✅ **Removed legacy endpoints** - Cleaned up old API paths
 - ✅ **Enhanced documentation** - Comprehensive API docs and examples
 - ✅ **Improved caching** - Better ETag support and TTL management

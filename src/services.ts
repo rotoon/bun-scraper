@@ -165,10 +165,12 @@ export class FootballService {
     const timestamp = new Date().toISOString();
 
     try {
+      // eslint-disable-next-line no-console
       console.log(`[${timestamp}] Starting cron job execution...`);
 
       // Scrape matches
       const matches = await scraper.scrapeMatches();
+      // eslint-disable-next-line no-console
       console.log(`[${timestamp}] Scraped ${matches.length} matches`);
 
       // Save to database using repository
@@ -189,6 +191,7 @@ export class FootballService {
       await this.cronRepository.logCronJob(cronJobResult);
 
       if (saveResult.success) {
+        // eslint-disable-next-line no-console
         console.log(`[${timestamp}] Cron job completed successfully`);
         return {
           success: true,

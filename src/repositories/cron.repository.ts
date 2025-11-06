@@ -1,6 +1,10 @@
-import { Database } from 'bun:sqlite';
-import { BaseRepository, RepositoryError } from './base.repository';
+import { Database, type SQLQueryBindings } from 'bun:sqlite';
 import type { CronJobResult } from '../types';
+import {
+  BaseRepository,
+  RepositoryError,
+  type BaseEntity,
+} from './base.repository';
 
 // Cron job log entity interface
 export interface CronJobLog extends BaseEntity {
@@ -77,7 +81,7 @@ export class CronRepository
 {
   constructor(db: Database) {
     super(db, 'cron_jobs');
-    this.initializeTable();
+    void this.initializeTable();
   }
 
   private async initializeTable(): Promise<void> {
@@ -211,7 +215,7 @@ export class CronRepository
         }
       }
 
-      const rows = this.db.query(query).all(params);
+      const rows = this.db.query(query).all(...params);
       return rows.map(row => this.mapRowToEntity(row));
     } catch (error) {
       throw new RepositoryError(
@@ -312,7 +316,7 @@ export class CronRepository
 
       query += ' ORDER BY timestamp DESC LIMIT 1';
 
-      const row = this.db.query(query).get(params);
+      const row = this.db.query(query).get(...params);
       return row ? this.mapRowToEntity(row) : null;
     } catch (error) {
       throw new RepositoryError(
@@ -331,7 +335,7 @@ export class CronRepository
 
       const result = this.db.run(
         'DELETE FROM cron_jobs WHERE createdAt < ?',
-        cutoffTimestamp,
+        cutoffTimestamp as unknown as SQLQueryBindings[],
       );
 
       return result.changes;

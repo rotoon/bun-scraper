@@ -9,6 +9,7 @@ export class FootballScraper {
 
   async scrapeMatches(): Promise<Match[]> {
     try {
+      // eslint-disable-next-line no-console
       console.log(
         `[${new Date().toISOString()}] Starting scrape from ${this.baseUrl}`,
       );
@@ -26,6 +27,7 @@ export class FootballScraper {
       const html = await response.text();
       const matches = this.parseMatchesFromHTML(html);
 
+      // eslint-disable-next-line no-console
       console.log(
         `[${new Date().toISOString()}] Successfully parsed ${matches.length} matches`,
       );

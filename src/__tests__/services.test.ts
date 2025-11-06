@@ -117,7 +117,7 @@ describe('FootballService - Advanced Filtering', () => {
 
   beforeEach(() => {
     // Mock the database module
-    mock.module('../database', () => ({
+    void mock.module('../database', () => ({
       db: mockDatabaseService,
       DatabaseService: class MockDatabaseService {
         getMatches = mockDatabaseModule.getMatches;

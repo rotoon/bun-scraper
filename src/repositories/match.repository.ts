@@ -1,11 +1,11 @@
 import { Database } from 'bun:sqlite';
+import type { Match, MatchStatus } from '../types';
 import {
   BaseRepository,
   type IRepository,
   type QueryOptions,
   RepositoryError,
 } from './base.repository';
-import type { Match, MatchStatus } from '../types';
 
 // Database row interface for matches table
 interface MatchRow {
@@ -176,7 +176,7 @@ export class MatchRepository
         status,
       });
       const query = this.buildMatchQuery(whereClause, options);
-      const rows = this.db.query(query).all(params) as MatchRow[];
+      const rows = this.db.query(query).all(...params) as MatchRow[];
       return rows.map(row => this.mapRowToEntity(row));
     } catch (error) {
       throw new RepositoryError(
@@ -197,7 +197,7 @@ export class MatchRepository
         league,
       });
       const query = this.buildMatchQuery(whereClause, options);
-      const rows = this.db.query(query).all(params) as MatchRow[];
+      const rows = this.db.query(query).all(...params) as MatchRow[];
       return rows.map(row => this.mapRowToEntity(row));
     } catch (error) {
       throw new RepositoryError(
@@ -220,7 +220,7 @@ export class MatchRepository
         dateTo,
       });
       const query = this.buildMatchQuery(whereClause, options);
-      const rows = this.db.query(query).all(params) as MatchRow[];
+      const rows = this.db.query(query).all(...params) as MatchRow[];
       return rows.map(row => this.mapRowToEntity(row));
     } catch (error) {
       throw new RepositoryError(
@@ -253,7 +253,7 @@ export class MatchRepository
       }
 
       const query = this.buildMatchQuery(whereClause, options);
-      const rows = this.db.query(query).all(params) as MatchRow[];
+      const rows = this.db.query(query).all(...params) as MatchRow[];
       return rows.map(row => this.mapRowToEntity(row));
     } catch (error) {
       throw new RepositoryError(
@@ -298,7 +298,7 @@ export class MatchRepository
       }
 
       const queryOptions = this.buildMatchQuery(whereClause, options);
-      const rows = this.db.query(queryOptions).all(params) as MatchRow[];
+      const rows = this.db.query(queryOptions).all(...params) as MatchRow[];
       return rows.map(row => this.mapRowToEntity(row));
     } catch (error) {
       throw new RepositoryError(
@@ -318,13 +318,13 @@ export class MatchRepository
 
       // Get total count
       const countQuery = `SELECT COUNT(*) as total FROM matches ${whereClause}`;
-      const countResult = this.db.query(countQuery).get(params) as {
+      const countResult = this.db.query(countQuery).get(...params) as {
         total: number;
       };
 
       // Get paginated results
       const query = this.buildMatchQuery(whereClause, options);
-      const rows = this.db.query(query).all(params) as MatchRow[];
+      const rows = this.db.query(query).all(...params) as MatchRow[];
       const matches = rows.map(row => this.mapRowToEntity(row));
 
       return { matches, total: countResult.total };

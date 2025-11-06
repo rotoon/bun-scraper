@@ -115,6 +115,7 @@ async function getStreamData(
     const html = await response.text();
     const iframeSrc = extractIframeSrc(html);
 
+    // eslint-disable-next-line no-console
     console.log(
       iframeSrc
         ? `✅ Found stream for matchId: ${matchId}`
@@ -157,6 +158,7 @@ export async function getIframeUrl(
   // Input validation
   try {
     const validatedMatchId = validateMatchId(matchId);
+    // eslint-disable-next-line no-console
     console.log(`✅ Validated matchId: ${validatedMatchId}`);
     matchId = validatedMatchId;
   } catch (error) {
@@ -197,6 +199,7 @@ export async function getIframeUrl(
       if (attempt < maxRetries) {
         // Exponential backoff
         const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+        // eslint-disable-next-line no-console
         console.log(`🔄 Retrying in ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }

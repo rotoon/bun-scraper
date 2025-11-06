@@ -27,8 +27,16 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 
+# database files
+*.db
+*.sqlite
+*.sqlite3
+
 # IntelliJ based IDEs
 .idea
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# Claude generated files
+.claudedocs/

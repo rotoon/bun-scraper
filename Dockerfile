@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 3000
 
 # Run the application
-CMD ["bun", "index.ts"]
+CMD ["bun", "src/index.ts"]

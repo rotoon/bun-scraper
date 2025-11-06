@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
-import { FootballAPIServer } from './src/server'
-import { footballService } from './src/services'
+import { FootballAPIServer } from './server'
+import { footballService } from './services'
 
 // Get port from environment or use default
 const PORT = parseInt(process.env.PORT || '3000', 10)

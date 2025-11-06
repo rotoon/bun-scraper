@@ -4,13 +4,30 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@typescript-eslint/eslint-plugin": "^8.46.3",
+    "@typescript-eslint/parser": "^8.46.3",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.6.2"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
     "cheerio": "^1.1.2"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "scripts": {
     "start": "bun src/index.ts",
@@ -21,6 +38,14 @@
     "test-api": "curl -X POST http://localhost:3000/cron",
     "test-matches": "curl http://localhost:3000/api/matches?limit=5",
     "test-live": "curl http://localhost:3000/api/matches/live",
-    "test-health": "curl http://localhost:3000/health"
+    "test-health": "curl http://localhost:3000/health",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "lint:quiet": "eslint src --ext .ts --quiet",
+    "format": "prettier --write \"src/**/*.{ts,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,json}\"",
+    "format:all": "prettier --write .",
+    "prepare": "husky",
+    "type-check": "tsc --noEmit"
   }
 }

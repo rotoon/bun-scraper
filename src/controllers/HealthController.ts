@@ -1,15 +1,15 @@
-import { footballService } from '../services'
-import { successResponse } from '../response'
+import { footballService } from '../services';
+import { successResponse } from '../response';
 
 export class HealthController {
-  private port: number
+  private port: number;
 
   constructor(port: number = 3000) {
-    this.port = port
+    this.port = port;
   }
 
   async handleHealthCheck(): Promise<Response> {
-    const stats = await footballService.getStatistics()
+    const stats = await footballService.getStatistics();
 
     return successResponse({
       status: 'healthy',
@@ -22,7 +22,7 @@ export class HealthController {
           ? new Date(stats.lastUpdated).toISOString()
           : null,
       },
-    })
+    });
   }
 
   handleDocs(): Promise<Response> {
@@ -87,7 +87,8 @@ export class HealthController {
           method: 'POST',
           description: 'Clean old matches from database',
           parameters: {
-            hours: 'Delete matches older than specified hours (default: 24, min: 1, max: 168)',
+            hours:
+              'Delete matches older than specified hours (default: 24, min: 1, max: 168)',
           },
         },
         {
@@ -122,8 +123,8 @@ export class HealthController {
         streamExample: `GET /api/v1/stream/match123`,
         batchStreams: `POST /api/v1/streams/batch`,
       },
-    }
+    };
 
-    return Promise.resolve(successResponse(docs, 'API Documentation'))
+    return Promise.resolve(successResponse(docs, 'API Documentation'));
   }
 }

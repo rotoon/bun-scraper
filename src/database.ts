@@ -1,13 +1,13 @@
-import { Database } from 'bun:sqlite'
-import { join } from 'path'
-import type { Match, MatchStatus, DatabaseResult } from './types'
+import { Database } from 'bun:sqlite';
+import { join } from 'path';
+import type { Match, MatchStatus, DatabaseResult } from './types';
 
 class DatabaseService {
-  private db: Database
+  private db: Database;
 
   constructor(dbPath: string = join(process.cwd(), 'football-matches.db')) {
-    this.db = new Database(dbPath)
-    this.initDatabase()
+    this.db = new Database(dbPath);
+    this.initDatabase();
   }
 
   private initDatabase(): void {
@@ -33,33 +33,33 @@ class DatabaseService {
         createdAt INTEGER DEFAULT (strftime('%s', 'now')),
         updatedAt INTEGER DEFAULT (strftime('%s', 'now'))
       )
-    `)
+    `);
 
     // Create indexes for performance
-    this.db.run(`CREATE INDEX IF NOT EXISTS idx_matchId ON matches(matchId)`)
-    this.db.run(`CREATE INDEX IF NOT EXISTS idx_status ON matches(status)`)
+    this.db.run(`CREATE INDEX IF NOT EXISTS idx_matchId ON matches(matchId)`);
+    this.db.run(`CREATE INDEX IF NOT EXISTS idx_status ON matches(status)`);
     this.db.run(
-      `CREATE INDEX IF NOT EXISTS idx_timestamp ON matches(timestamp)`
-    )
-    this.db.run(`CREATE INDEX IF NOT EXISTS idx_league ON matches(league)`)
+      `CREATE INDEX IF NOT EXISTS idx_timestamp ON matches(timestamp)`,
+    );
+    this.db.run(`CREATE INDEX IF NOT EXISTS idx_league ON matches(league)`);
     this.db.run(
-      `CREATE INDEX IF NOT EXISTS idx_scrapedAt ON matches(scrapedAt)`
-    )
+      `CREATE INDEX IF NOT EXISTS idx_scrapedAt ON matches(scrapedAt)`,
+    );
     this.db.run(
-      `CREATE INDEX IF NOT EXISTS idx_matchDate ON matches(matchDate)`
-    )
+      `CREATE INDEX IF NOT EXISTS idx_matchDate ON matches(matchDate)`,
+    );
   }
 
   // Clear all matches (for fresh data)
   clearAllMatches(): number {
-    const result = this.db.run('DELETE FROM matches', [])
-    return result.changes
+    const result = this.db.run('DELETE FROM matches', []);
+    return result.changes;
   }
 
   // Save matches to database (clears old data first)
   saveMatches(matches: Match[]): DatabaseResult {
-    let inserted = 0
-    const deletedCount = this.clearAllMatches()
+    let inserted = 0;
+    const deletedCount = this.clearAllMatches();
 
     try {
       const transaction = this.db.transaction(() => {
@@ -88,29 +88,29 @@ class DatabaseService {
               match.status,
               Date.now(),
               Date.now(),
-            ]
-          )
-          inserted++
+            ],
+          );
+          inserted++;
         }
-      })
+      });
 
-      transaction()
+      transaction();
 
       return {
         success: true,
         inserted,
         deleted: deletedCount,
         message: `Successfully saved ${inserted} matches`,
-      }
+      };
     } catch (error) {
-      console.error('Database transaction failed:', error)
+      console.error('Database transaction failed:', error);
       return {
         success: false,
         inserted: 0,
         deleted: 0,
         message:
           error instanceof Error ? error.message : 'Unknown database error',
-      }
+      };
     }
   }
 
@@ -119,45 +119,45 @@ class DatabaseService {
     limit?: number,
     status?: MatchStatus,
     league?: string,
-    offset: number = 0
+    offset: number = 0,
   ): { matches: Match[]; total: number } {
-    let whereClause = ''
-    const params: any[] = []
+    let whereClause = '';
+    const params: any[] = [];
 
     // Build WHERE clause
-    const conditions: string[] = []
+    const conditions: string[] = [];
     if (status) {
-      conditions.push('status = ?')
-      params.push(status)
+      conditions.push('status = ?');
+      params.push(status);
     }
     if (league) {
-      conditions.push('league = ?')
-      params.push(league)
+      conditions.push('league = ?');
+      params.push(league);
     }
 
     if (conditions.length > 0) {
-      whereClause = `WHERE ${conditions.join(' AND ')}`
+      whereClause = `WHERE ${conditions.join(' AND ')}`;
     }
 
     // Get total count
-    const countQuery = `SELECT COUNT(*) as total FROM matches ${whereClause}`
+    const countQuery = `SELECT COUNT(*) as total FROM matches ${whereClause}`;
     const countResult = this.db.query(countQuery).get(params as any) as {
-      total: number
-    }
-    const total = countResult.total
+      total: number;
+    };
+    const total = countResult.total;
 
     // Get paginated results
     let query = `
       SELECT * FROM matches
       ${whereClause}
       ORDER BY timestamp ASC
-    `
+    `;
 
     if (limit) {
-      query += ` LIMIT ${limit} OFFSET ${offset}`
+      query += ` LIMIT ${limit} OFFSET ${offset}`;
     }
 
-    const rows = this.db.query(query).all(params as any) as any[]
+    const rows = this.db.query(query).all(params as any) as any[];
 
     const matches = rows.map((row: any) => ({
       matchId: row.matchId,
@@ -174,43 +174,43 @@ class DatabaseService {
       streamUrl: row.streamUrl,
       timestamp: row.timestamp,
       status: row.status as MatchStatus,
-    }))
+    }));
 
-    return { matches, total }
+    return { matches, total };
   }
 
   // Clean old matches
   cleanOldMatches(hoursOld: number = 24): number {
-    const cutoffTime = Date.now() - hoursOld * 60 * 60 * 1000
+    const cutoffTime = Date.now() - hoursOld * 60 * 60 * 1000;
     const result = this.db.run('DELETE FROM matches WHERE scrapedAt < ?', [
       cutoffTime,
-    ])
-    return result.changes
+    ]);
+    return result.changes;
   }
 
   // Get database statistics
   getStats(): {
-    totalMatches: number
-    liveMatches: number
-    upcomingMatches: number
-    finishedMatches: number
-    lastUpdated: number | null
+    totalMatches: number;
+    liveMatches: number;
+    upcomingMatches: number;
+    finishedMatches: number;
+    lastUpdated: number | null;
   } {
     const total = this.db
       .query('SELECT COUNT(*) as count FROM matches')
-      .get() as { count: number }
+      .get() as { count: number };
     const live = this.db
       .query('SELECT COUNT(*) as count FROM matches WHERE status = ?')
-      .get('live') as { count: number }
+      .get('live') as { count: number };
     const upcoming = this.db
       .query('SELECT COUNT(*) as count FROM matches WHERE status = ?')
-      .get('upcoming') as { count: number }
+      .get('upcoming') as { count: number };
     const finished = this.db
       .query('SELECT COUNT(*) as count FROM matches WHERE status = ?')
-      .get('finished') as { count: number }
+      .get('finished') as { count: number };
     const lastUpdated = this.db
       .query('SELECT MAX(scrapedAt) as lastUpdated FROM matches')
-      .get() as { lastUpdated: number | null }
+      .get() as { lastUpdated: number | null };
 
     return {
       totalMatches: total.count,
@@ -218,16 +218,21 @@ class DatabaseService {
       upcomingMatches: upcoming.count,
       finishedMatches: finished.count,
       lastUpdated: lastUpdated.lastUpdated,
-    }
+    };
+  }
+
+  // Get raw database instance for repositories
+  getDatabase(): Database {
+    return this.db;
   }
 
   close(): void {
-    this.db.close()
+    this.db.close();
   }
 }
 
 // Singleton instance
-export const db = new DatabaseService()
+export const db = new DatabaseService();
 
 // Export types
-export { DatabaseService }
+export { DatabaseService };

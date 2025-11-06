@@ -94,36 +94,36 @@ curl "http://localhost:3000/api/v1/matches/search?q=Premier%20League"
 
 ### Core Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/matches` | Get paginated matches with filtering |
-| `GET` | `/api/v1/matches/live` | Get currently live matches |
-| `GET` | `/api/v1/matches/search` | Search matches by query |
-| `GET` | `/api/v1/matches/live/streams` | Live matches with stream status |
-| `GET` | `/api/v1/stats` | Database statistics |
-| `GET` | `/api/v1/leagues` | Available leagues |
+| Method | Endpoint                       | Description                          |
+| ------ | ------------------------------ | ------------------------------------ |
+| `GET`  | `/api/v1/matches`              | Get paginated matches with filtering |
+| `GET`  | `/api/v1/matches/live`         | Get currently live matches           |
+| `GET`  | `/api/v1/matches/search`       | Search matches by query              |
+| `GET`  | `/api/v1/matches/live/streams` | Live matches with stream status      |
+| `GET`  | `/api/v1/stats`                | Database statistics                  |
+| `GET`  | `/api/v1/leagues`              | Available leagues                    |
 
 ### Stream Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/v1/stream/{matchId}` | Get stream URL for match |
-| `POST` | `/api/v1/streams/batch` | Get multiple stream URLs |
+| Method | Endpoint                   | Description              |
+| ------ | -------------------------- | ------------------------ |
+| `GET`  | `/api/v1/stream/{matchId}` | Get stream URL for match |
+| `POST` | `/api/v1/streams/batch`    | Get multiple stream URLs |
 
 ### Management Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/refresh` | Manually refresh data |
-| `POST` | `/api/v1/clean` | Clean old data |
-| `POST` | `/cron` | Automated cron job trigger |
+| Method | Endpoint          | Description                |
+| ------ | ----------------- | -------------------------- |
+| `POST` | `/api/v1/refresh` | Manually refresh data      |
+| `POST` | `/api/v1/clean`   | Clean old data             |
+| `POST` | `/cron`           | Automated cron job trigger |
 
 ### Utility Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/health` | System health check |
-| `GET` | `/docs` | API documentation overview |
+| Method | Endpoint  | Description                |
+| ------ | --------- | -------------------------- |
+| `GET`  | `/health` | System health check        |
+| `GET`  | `/docs`   | API documentation overview |
 
 ## 🎯 Use Cases
 
@@ -134,7 +134,7 @@ curl "http://localhost:3000/api/v1/matches/search?q=Premier%20League"
 async function updateLiveScores() {
   const response = await fetch('/api/v1/matches/live');
   const data = await response.json();
-  
+
   if (data.success) {
     displayLiveMatches(data.data);
   }
@@ -153,7 +153,7 @@ const params = new URLSearchParams({
   team: 'Manchester',
   status: 'live',
   sort: 'date',
-  order: 'asc'
+  order: 'asc',
 });
 
 const response = await fetch(`/api/v1/matches?${params}`);
@@ -166,9 +166,9 @@ const response = await fetch(`/api/v1/matches?${params}`);
 const streams = await fetch('/api/v1/streams/batch', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ 
-    matchIds: ['match1', 'match2', 'match3'] 
-  })
+  body: JSON.stringify({
+    matchIds: ['match1', 'match2', 'match3'],
+  }),
 });
 ```
 
@@ -203,7 +203,7 @@ CACHE_TTL_LIVE=30
 
 - **Live matches**: 30 seconds
 - **Match data**: 5-15 minutes
-- **Statistics**: 10 minutes  
+- **Statistics**: 10 minutes
 - **Leagues**: 1 hour
 
 ## 🚀 Deployment
@@ -211,16 +211,18 @@ CACHE_TTL_LIVE=30
 ### Railway (Recommended)
 
 1. **Fork and Deploy**
+
    ```bash
    # Connect to Railway
    railway login
    railway init
-   
+
    # Deploy
    railway up
    ```
 
 2. **Environment Setup**
+
    ```bash
    # Set environment variables
    railway variables set NODE_ENV=production
@@ -228,14 +230,15 @@ CACHE_TTL_LIVE=30
    ```
 
 3. **Cron Configuration**
+
    ```toml
    # railway.toml
    [build]
    builder = "nixpacks"
-   
+
    [[deploy]]
    region = "us-east"
-   
+
    [[deploy.cron]]
    schedule = "*/15 * * * *"
    command = "curl -X POST https://your-app.railway.app/cron"
@@ -341,7 +344,7 @@ curl http://localhost:3000/api/v1/stats
 ### Metrics to Monitor
 
 - **Response times**
-- **Error rates** 
+- **Error rates**
 - **Rate limit usage**
 - **Cache hit rates**
 - **Database performance**
@@ -384,7 +387,7 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 ## 🆘 Support
 
 - **📖 Documentation**: [API Documentation](./API_DOCUMENTATION.md)
-- **⚡ Quick Start**: [Quick Start Guide](./QUICK_START.md)  
+- **⚡ Quick Start**: [Quick Start Guide](./QUICK_START.md)
 - **🚀 Deployment**: [Deployment Guide](./DEPLOYMENT.md)
 - **🐛 Issues**: [GitHub Issues](https://github.com/your-repo/issues)
 - **💬 Discussions**: [GitHub Discussions](https://github.com/your-repo/discussions)

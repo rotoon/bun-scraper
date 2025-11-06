@@ -114,17 +114,17 @@ Retrieve football matches with advanced filtering, sorting, and pagination.
 
 #### Parameters
 
-| Parameter | Type | Required | Default | Min/Max | Description |
-|-----------|------|----------|---------|---------|-------------|
-| `page` | number | No | 1 | 1-1000 | Page number for pagination |
-| `limit` | number | No | 20 | 1-999 | Items per page |
-| `status` | string | No | - | - | Filter by match status: `live`, `upcoming`, `finished`, `unknown` |
-| `league` | string | No | - | 2-100 chars | Filter by league name (case-insensitive partial match) |
-| `dateFrom` | string | No | - | - | Filter matches from this date (format: YYYY-MM-DD) |
-| `dateTo` | string | No | - | - | Filter matches until this date (format: YYYY-MM-DD) |
-| `team` | string | No | - | 2-100 chars | Filter by team name (case-insensitive) |
-| `sort` | string | No | `date` | - | Sort field: `date`, `league`, `status` |
-| `order` | string | No | `desc` | - | Sort order: `asc`, `desc` |
+| Parameter  | Type   | Required | Default | Min/Max     | Description                                                       |
+| ---------- | ------ | -------- | ------- | ----------- | ----------------------------------------------------------------- |
+| `page`     | number | No       | 1       | 1-1000      | Page number for pagination                                        |
+| `limit`    | number | No       | 20      | 1-999       | Items per page                                                    |
+| `status`   | string | No       | -       | -           | Filter by match status: `live`, `upcoming`, `finished`, `unknown` |
+| `league`   | string | No       | -       | 2-100 chars | Filter by league name (case-insensitive partial match)            |
+| `dateFrom` | string | No       | -       | -           | Filter matches from this date (format: YYYY-MM-DD)                |
+| `dateTo`   | string | No       | -       | -           | Filter matches until this date (format: YYYY-MM-DD)               |
+| `team`     | string | No       | -       | 2-100 chars | Filter by team name (case-insensitive)                            |
+| `sort`     | string | No       | `date`  | -           | Sort field: `date`, `league`, `status`                            |
+| `order`    | string | No       | `desc`  | -           | Sort order: `asc`, `desc`                                         |
 
 #### Example Requests
 
@@ -163,8 +163,8 @@ curl -X GET "http://localhost:3000/api/v1/matches?status=live&league=Premier%20L
         "matchTime": "19:00",
         "matchDate": "2024-01-15",
         "teams": [
-          {"name": "Team A", "logo": "https://example.com/logo1.png"},
-          {"name": "Team B", "logo": "https://example.com/logo2.png"}
+          { "name": "Team A", "logo": "https://example.com/logo1.png" },
+          { "name": "Team B", "logo": "https://example.com/logo2.png" }
         ],
         "league": "Premier League",
         "matchTitle": "Team A vs Team B",
@@ -233,8 +233,8 @@ curl -X GET "http://localhost:3000/api/v1/matches/live"
       "matchTime": "19:00",
       "matchDate": "2024-01-15",
       "teams": [
-        {"name": "Team A", "logo": null},
-        {"name": "Team B", "logo": null}
+        { "name": "Team A", "logo": null },
+        { "name": "Team B", "logo": null }
       ],
       "league": "Premier League",
       "matchTitle": "Team A vs Team B",
@@ -264,9 +264,9 @@ Search matches by team name or league using fuzzy matching.
 
 #### Parameters
 
-| Parameter | Type | Required | Min/Max | Description |
-|-----------|------|----------|---------|-------------|
-| `q` | string | Yes | 2-100 chars | Search query (case-insensitive) |
+| Parameter | Type   | Required | Min/Max     | Description                     |
+| --------- | ------ | -------- | ----------- | ------------------------------- |
+| `q`       | string | Yes      | 2-100 chars | Search query (case-insensitive) |
 
 #### Example Request
 
@@ -285,8 +285,8 @@ curl -X GET "http://localhost:3000/api/v1/matches/search?q=Manchester"
       "matchTime": "19:00",
       "matchDate": "2024-01-15",
       "teams": [
-        {"name": "Manchester United", "logo": null},
-        {"name": "Liverpool", "logo": null}
+        { "name": "Manchester United", "logo": null },
+        { "name": "Liverpool", "logo": null }
       ],
       "league": "Premier League",
       "matchTitle": "Manchester United vs Liverpool",
@@ -331,8 +331,8 @@ curl -X GET "http://localhost:3000/api/v1/matches/live/streams"
       "matchTime": "19:00",
       "matchDate": "2024-01-15",
       "teams": [
-        {"name": "Team A", "logo": null},
-        {"name": "Team B", "logo": null}
+        { "name": "Team A", "logo": null },
+        { "name": "Team B", "logo": null }
       ],
       "league": "Premier League",
       "matchTitle": "Team A vs Team B",
@@ -471,9 +471,9 @@ Remove old matches from database based on age.
 
 #### Parameters
 
-| Parameter | Type | Required | Default | Min/Max | Description |
-|-----------|------|----------|---------|---------|-------------|
-| `hours` | number | No | 24 | 1-168 | Delete matches older than X hours |
+| Parameter | Type   | Required | Default | Min/Max | Description                       |
+| --------- | ------ | -------- | ------- | ------- | --------------------------------- |
+| `hours`   | number | No       | 24      | 1-168   | Delete matches older than X hours |
 
 #### Example Request
 
@@ -508,9 +508,9 @@ Get iframe stream URL for a specific match.
 
 #### Path Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `matchId` | string | Yes | Match ID from the matches list |
+| Parameter | Type   | Required | Description                    |
+| --------- | ------ | -------- | ------------------------------ |
+| `matchId` | string | Yes      | Match ID from the matches list |
 
 #### Example Request
 
@@ -681,14 +681,14 @@ Monitor rate limit headers and implement exponential backoff:
 async function fetchWithRetry(url, retries = 3) {
   try {
     const response = await fetch(url);
-    
+
     if (response.status === 429) {
       const retryAfter = parseInt(response.headers.get('Retry-After')) || 60;
       console.log(`Rate limited. Retrying after ${retryAfter} seconds...`);
       await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
       return fetchWithRetry(url, retries - 1);
     }
-    
+
     return response;
   } catch (error) {
     if (retries > 0) {
@@ -709,19 +709,19 @@ Use appropriate page sizes and implement proper pagination logic:
 async function getAllMatches(url, maxPages = 50) {
   let allMatches = [];
   let page = 1;
-  
+
   while (page <= maxPages) {
     const response = await fetch(`${url}?page=${page}&limit=100`);
     const data = await response.json();
-    
+
     if (!data.success) break;
-    
+
     allMatches = allMatches.concat(data.data.matches);
-    
+
     if (!data.data.pagination.hasNext) break;
     page++;
   }
-  
+
   return allMatches;
 }
 ```
@@ -734,22 +734,23 @@ Respect `Cache-Control` headers and implement client-side caching:
 // Simple in-memory cache with TTL
 const cache = new Map();
 
-async function cachedFetch(url, ttl = 300000) { // 5 minutes default TTL
+async function cachedFetch(url, ttl = 300000) {
+  // 5 minutes default TTL
   const cacheKey = url;
   const cached = cache.get(cacheKey);
-  
+
   if (cached && Date.now() - cached.timestamp < ttl) {
     return cached.data;
   }
-  
+
   const response = await fetch(url);
   const data = await response.json();
-  
+
   cache.set(cacheKey, {
     data,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
-  
+
   return data;
 }
 ```
@@ -761,7 +762,7 @@ Always check the `success` field and handle validation errors:
 ```javascript
 async function handleApiResponse(response) {
   const data = await response.json();
-  
+
   if (!data.success) {
     if (data.errors && Array.isArray(data.errors)) {
       // Handle validation errors
@@ -775,7 +776,7 @@ async function handleApiResponse(response) {
     }
     return null;
   }
-  
+
   return data.data;
 }
 ```
@@ -790,7 +791,7 @@ async function updateLiveScores() {
   try {
     const response = await fetch('/api/v1/matches/live');
     const data = await response.json();
-    
+
     if (data.success) {
       displayLiveMatches(data.data);
     }
@@ -808,11 +809,13 @@ setInterval(updateLiveScores, 30000);
 ```javascript
 async function searchMatches(query) {
   if (query.length < 2) return [];
-  
+
   try {
-    const response = await fetch(`/api/v1/matches/search?q=${encodeURIComponent(query)}`);
+    const response = await fetch(
+      `/api/v1/matches/search?q=${encodeURIComponent(query)}`,
+    );
     const data = await response.json();
-    
+
     return data.success ? data.data : [];
   } catch (error) {
     console.error('Search failed:', error);
@@ -827,18 +830,18 @@ async function searchMatches(query) {
 async function getLeagueMatches(leagueName, filters = {}) {
   const params = new URLSearchParams({
     league: leagueName,
-    ...filters
+    ...filters,
   });
-  
+
   try {
     const response = await fetch(`/api/v1/matches?${params}`);
     const data = await response.json();
-    
+
     if (data.success) {
       return {
         matches: data.data.matches,
         pagination: data.data.pagination,
-        filters: data.data.filters
+        filters: data.data.filters,
       };
     }
     return null;
@@ -858,41 +861,41 @@ class FootballAPI {
   constructor(baseUrl = 'http://localhost:3000/api/v1') {
     this.baseUrl = baseUrl;
   }
-  
+
   async request(endpoint, options = {}) {
     const url = `${this.baseUrl}${endpoint}`;
     const response = await fetch(url, options);
     const data = await response.json();
-    
+
     if (!data.success) {
       throw new Error(data.message || 'API request failed');
     }
-    
+
     return data.data;
   }
-  
+
   async getMatches(params = {}) {
     const query = new URLSearchParams(params);
     return this.request(`/matches?${query}`);
   }
-  
+
   async getLiveMatches() {
     return this.request('/matches/live');
   }
-  
+
   async searchMatches(query) {
     return this.request(`/matches/search?q=${encodeURIComponent(query)}`);
   }
-  
+
   async getMatchStream(matchId) {
     return this.request(`/stream/${matchId}`);
   }
-  
+
   async getBatchStreamUrls(matchIds) {
     return this.request('/streams/batch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ matchIds })
+      body: JSON.stringify({ matchIds }),
     });
   }
 }
@@ -917,32 +920,32 @@ class FootballAPI:
     def __init__(self, base_url: str = "http://localhost:3000/api/v1"):
         self.base_url = base_url
         self.session = requests.Session()
-    
+
     def request(self, endpoint: str, **kwargs) -> Dict:
         url = f"{self.base_url}{endpoint}"
         response = self.session.request('GET', url, **kwargs)
         response.raise_for_status()
         data = response.json()
-        
+
         if not data.get('success'):
             raise Exception(data.get('message', 'API request failed'))
-        
+
         return data['data']
-    
+
     def get_matches(self, **params) -> Dict:
         return self.request('/matches', params=params)
-    
+
     def get_live_matches(self) -> List[Dict]:
         return self.request('/matches/live')
-    
+
     def search_matches(self, query: str) -> List[Dict]:
         return self.request('/matches/search', params={'q': query})
-    
+
     def get_match_stream(self, match_id: str) -> Dict:
         return self.request(f'/stream/{match_id}')
-    
+
     def get_batch_stream_urls(self, match_ids: List[str]) -> Dict:
-        return self.request('/streams/batch', 
+        return self.request('/streams/batch',
                           method='POST',
                           json={'matchIds': match_ids})
 

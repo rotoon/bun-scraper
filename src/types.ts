@@ -116,7 +116,7 @@ export interface CacheConfig {
 
 export interface CacheHeaders {
   'Cache-Control': string;
-  'ETag'?: string;
+  ETag?: string;
   'X-RateLimit-Remaining'?: string;
   'X-RateLimit-Limit'?: string;
   'X-RateLimit-Reset'?: string;

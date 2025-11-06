@@ -83,24 +83,7 @@ export class FootballAPIServer {
         case url.pathname === '/api/v1/leagues' && method === 'GET':
           return this.matchesController.handleGetLeagues()
 
-        // Legacy API endpoints (for backward compatibility)
-        case url.pathname === '/api/matches' && method === 'GET':
-          return this.matchesController.handleGetMatches(req, url)
-
-        case url.pathname === '/api/matches/live' && method === 'GET':
-          return this.matchesController.handleGetLiveMatches()
-
-        case url.pathname === '/api/matches/search' && method === 'GET':
-          return this.matchesController.handleSearchMatches(url)
-
-        case url.pathname === '/api/matches/live/streams' && method === 'GET':
-          return this.matchesController.handleGetLiveMatchesWithStreams()
-
-        case url.pathname === '/api/stats' && method === 'GET':
-          return this.matchesController.handleGetStats()
-
-        case url.pathname === '/api/leagues' && method === 'GET':
-          return this.matchesController.handleGetLeagues()
+  
 
         // Cron job endpoint (for Railway)
         case url.pathname === '/cron' && method === 'POST':
@@ -121,19 +104,7 @@ export class FootballAPIServer {
         case url.pathname === '/api/v1/streams/batch' && method === 'POST':
           return this.streamController.handleGetBatchStreams(req)
 
-        // Legacy endpoints (for backward compatibility)
-        case url.pathname === '/api/refresh' && method === 'POST':
-          return this.cronController.handleRefreshData()
-
-        case url.pathname === '/api/clean' && method === 'POST':
-          return this.cronController.handleCleanData(url)
-
-        case url.pathname.startsWith('/api/stream/') && method === 'GET':
-          const legacyMatchId = url.pathname.split('/').pop()
-          return this.streamController.handleGetStream(legacyMatchId!, req)
-
-        case url.pathname === '/api/streams/batch' && method === 'POST':
-          return this.streamController.handleGetBatchStreams(req)
+  
 
         // Default response
         default:

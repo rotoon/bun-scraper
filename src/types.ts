@@ -5,6 +5,7 @@ export interface ApiResponse<T = any> {
   message: string;
   timestamp: string;
   pagination?: PaginationInfo;
+  cache?: CacheInfo;
 }
 
 // Pagination Info
@@ -15,6 +16,14 @@ export interface PaginationInfo {
   totalPages: number;
   hasNext: boolean;
   hasPrev: boolean;
+}
+
+// Cache Information
+export interface CacheInfo {
+  etag?: string;
+  cacheControl?: string;
+  rateLimitRemaining?: number;
+  expiresAt?: string;
 }
 
 // Problem/Error Response (RFC 9457)
@@ -60,6 +69,10 @@ export interface Match {
 
 export type MatchStatus = 'live' | 'upcoming' | 'finished' | 'unknown';
 
+// Sort options for matches
+export type MatchSortField = 'date' | 'league' | 'status';
+export type SortOrder = 'asc' | 'desc';
+
 // Query Parameters
 export interface MatchQueryParams {
   page?: number;
@@ -68,6 +81,9 @@ export interface MatchQueryParams {
   league?: string;
   dateFrom?: string;
   dateTo?: string;
+  team?: string;
+  sort?: MatchSortField;
+  order?: SortOrder;
 }
 
 // Database Query Result
@@ -88,4 +104,20 @@ export interface CronJobResult {
   deleted?: number;
   executionTime?: number;
   timestamp: string;
+}
+
+// Cache-related interfaces
+export interface CacheConfig {
+  defaultTTL: number; // in seconds
+  etagEnabled: boolean;
+  rateLimitEnabled: boolean;
+  maxRequestsPerMinute: number;
+}
+
+export interface CacheHeaders {
+  'Cache-Control': string;
+  'ETag'?: string;
+  'X-RateLimit-Remaining'?: string;
+  'X-RateLimit-Limit'?: string;
+  'X-RateLimit-Reset'?: string;
 }

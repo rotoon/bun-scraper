@@ -1,21 +1,70 @@
 import { db } from './database'
 import { scraper } from './scraper'
 import { getIframeUrl, getMultipleIframeUrls, checkStreamAvailability, type StreamResponse, type GetStreamOptions } from './streamExtractor'
-import type { Match, MatchStatus, CronJobResult, DatabaseResult } from './types'
+import type { Match, MatchStatus, CronJobResult, DatabaseResult, MatchQueryParams, MatchSortField, SortOrder } from './types'
 
 export class FootballService {
-  // Get matches with filtering and pagination
-  async getMatches(
-    page: number = 1,
-    limit: number = 999,
-    status?: MatchStatus,
-    league?: string
-  ) {
+  // Get matches with advanced filtering and pagination
+  async getMatches(params: MatchQueryParams = {}) {
+    const {
+      page = 1,
+      limit = 20,
+      status,
+      league,
+      dateFrom,
+      dateTo,
+      team,
+      sort = 'date',
+      order = 'desc'
+    } = params
+
+    // Get all matches (we'll apply filters in memory for now)
+    const { matches: allMatches } = db.getMatches(9999) // Get all matches
+
+    // Apply filters
+    let filteredMatches = [...allMatches]
+
+    // Filter by status
+    if (status) {
+      filteredMatches = filteredMatches.filter(match => match.status === status)
+    }
+
+    // Filter by league
+    if (league) {
+      filteredMatches = filteredMatches.filter(match =>
+        match.league.toLowerCase().includes(league.toLowerCase())
+      )
+    }
+
+    // Filter by date range
+    if (dateFrom) {
+      filteredMatches = filteredMatches.filter(match => match.matchDate >= dateFrom)
+    }
+
+    if (dateTo) {
+      filteredMatches = filteredMatches.filter(match => match.matchDate <= dateTo)
+    }
+
+    // Filter by team name
+    if (team) {
+      const teamLower = team.toLowerCase()
+      filteredMatches = filteredMatches.filter(match =>
+        match.teams.some(team => team.name.toLowerCase().includes(teamLower)) ||
+        match.teamsDisplay.toLowerCase().includes(teamLower) ||
+        match.matchTitle.toLowerCase().includes(teamLower)
+      )
+    }
+
+    // Apply sorting
+    filteredMatches = this.sortMatches(filteredMatches, sort as MatchSortField, order as SortOrder)
+
+    // Apply pagination
     const offset = (page - 1) * limit
-    const { matches, total } = db.getMatches(limit, status, league, offset)
+    const paginatedMatches = filteredMatches.slice(offset, offset + limit)
+    const total = filteredMatches.length
 
     return {
-      matches,
+      matches: paginatedMatches,
       pagination: {
         page,
         limit,
@@ -25,7 +74,44 @@ export class FootballService {
         hasPrev: page > 1,
       },
       total,
+      filters: {
+        status,
+        league,
+        dateFrom,
+        dateTo,
+        team,
+        sort,
+        order
+      }
     }
+  }
+
+  // Sort matches based on field and order
+  private sortMatches(matches: Match[], sortField: MatchSortField, order: SortOrder): Match[] {
+    const multiplier = order === 'asc' ? 1 : -1
+
+    return matches.sort((a, b) => {
+      switch (sortField) {
+        case 'date':
+          // Sort by matchDate and matchTime combined
+          const dateA = new Date(`${a.matchDate} ${a.matchTime}`).getTime()
+          const dateB = new Date(`${b.matchDate} ${b.matchTime}`).getTime()
+          return multiplier * (dateA - dateB)
+
+        case 'league':
+          return multiplier * a.league.localeCompare(b.league)
+
+        case 'status':
+          // Custom status ordering: live > upcoming > finished > unknown
+          const statusOrder = { 'live': 3, 'upcoming': 2, 'finished': 1, 'unknown': 0 }
+          const statusA = statusOrder[a.status] || 0
+          const statusB = statusOrder[b.status] || 0
+          return multiplier * (statusA - statusB)
+
+        default:
+          return multiplier * a.matchDate.localeCompare(b.matchDate)
+      }
+    })
   }
 
   // Get live matches only

@@ -3,17 +3,39 @@ import {
   successResponse,
   badRequestResponse,
   internalServerErrorResponse,
+  notModifiedResponse,
+  tooManyRequestsWithRateLimitResponse,
   parseQueryParams,
   validateQueryParams,
 } from '../response'
+import { cacheManager, getMatchCacheTTL } from '../utils/cache'
+import type { MatchQueryParams } from '../types'
 
 export class MatchesController {
   async handleGetMatches(req: Request, url: URL): Promise<Response> {
+    // Check rate limiting
+    const clientId = cacheManager.getClientId(req)
+    const rateLimit = cacheManager.checkRateLimit(clientId)
+
+    if (!rateLimit.allowed) {
+      const retryAfter = Math.ceil((rateLimit.resetTime - Date.now()) / 1000)
+      return tooManyRequestsWithRateLimitResponse(
+        'Rate limit exceeded',
+        retryAfter,
+        rateLimit.headers
+      )
+    }
+
+    // Check for If-None-Match header (ETag support)
+    const ifNoneMatch = req.headers.get('if-none-match')
+
     // Parse and validate query parameters
     const params = parseQueryParams(url, {
       page: 1,
       limit: 20,
-    })
+      sort: 'date',
+      order: 'desc',
+    }) as MatchQueryParams
 
     const errors = validateQueryParams(params)
     if (errors.length > 0) {
@@ -21,17 +43,28 @@ export class MatchesController {
     }
 
     try {
-      const result = await footballService.getMatches(
-        params.page,
-        params.limit,
-        params.status,
-        params.league
+      const result = await footballService.getMatches(params)
+
+      // Generate cache info
+      const ttl = getMatchCacheTTL(result.matches)
+      const etag = cacheManager.generateETag(result)
+
+      // Check if resource has not been modified
+      if (ifNoneMatch && cacheManager.isNotModified(ifNoneMatch, etag)) {
+        return notModifiedResponse()
+      }
+
+      const cacheInfo = cacheManager.buildCacheInfo(
+        etag,
+        ttl,
+        rateLimit.remaining
       )
 
       return successResponse(
-        result.matches,
+        result,
         `Retrieved ${result.matches.length} matches`,
-        result.pagination
+        result.pagination,
+        cacheInfo
       )
     } catch (error) {
       console.error('Error getting matches:', error)
@@ -42,9 +75,17 @@ export class MatchesController {
   async handleGetLiveMatches(): Promise<Response> {
     try {
       const matches = await footballService.getLiveMatches()
+
+      // Generate cache info for live matches (short TTL)
+      const ttl = 30 // 30 seconds for live data
+      const etag = cacheManager.generateETag(matches)
+      const cacheInfo = cacheManager.buildCacheInfo(etag, ttl)
+
       return successResponse(
         matches,
-        `Retrieved ${matches.length} live matches`
+        `Retrieved ${matches.length} live matches`,
+        undefined,
+        cacheInfo
       )
     } catch (error) {
       console.error('Error getting live matches:', error)

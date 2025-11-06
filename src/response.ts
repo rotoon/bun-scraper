@@ -3,13 +3,15 @@ import type {
   ProblemResponse,
   PaginationInfo,
   ValidationError,
+  CacheInfo,
 } from './types'
 
 // Success Response Helper
 export function successResponse<T>(
   data: T,
   message: string = 'Success',
-  pagination?: PaginationInfo
+  pagination?: PaginationInfo,
+  cache?: CacheInfo
 ): Response {
   const response: ApiResponse<T> = {
     data,
@@ -17,16 +19,32 @@ export function successResponse<T>(
     message,
     timestamp: new Date().toISOString(),
     ...(pagination && { pagination }),
+    ...(cache && { cache }),
+  }
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  }
+
+  // Add cache headers if provided
+  if (cache) {
+    if (cache.cacheControl) {
+      headers['Cache-Control'] = cache.cacheControl
+    }
+    if (cache.etag) {
+      headers['ETag'] = cache.etag
+    }
+    if (cache.rateLimitRemaining !== undefined) {
+      headers['X-RateLimit-Remaining'] = cache.rateLimitRemaining.toString()
+    }
   }
 
   return new Response(JSON.stringify(response), {
     status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
+    headers,
   })
 }
 
@@ -122,6 +140,49 @@ export const serviceUnavailableResponse = (
     '/problems/service-unavailable'
   )
 
+// Not Modified Response (304)
+export function notModifiedResponse(): Response {
+  return new Response(null, {
+    status: 304,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'no-cache',
+    },
+  })
+}
+
+// Too Many Requests Response with Rate Limit Headers
+export function tooManyRequestsWithRateLimitResponse(
+  detail: string = 'Rate limit exceeded',
+  retryAfter?: number,
+  rateLimitHeaders?: Record<string, string>
+): Response {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/problem+json',
+    'Access-Control-Allow-Origin': '*',
+  }
+
+  if (retryAfter) {
+    headers['Retry-After'] = retryAfter.toString()
+  }
+
+  if (rateLimitHeaders) {
+    Object.assign(headers, rateLimitHeaders)
+  }
+
+  const problem: ProblemResponse = {
+    type: '/problems/too-many-requests',
+    title: 'Too Many Requests',
+    status: 429,
+    detail,
+  }
+
+  return new Response(JSON.stringify(problem), {
+    status: 429,
+    headers,
+  })
+}
+
 // CORS Options Response
 export function optionsResponse(): Response {
   return new Response(null, {
@@ -151,7 +212,7 @@ export function parseQueryParams(url: URL, defaults: Record<string, any> = {}) {
   })
 
   // Parse string parameters
-  ;['status', 'league', 'dateFrom', 'dateTo', 'hours'].forEach((param) => {
+  ;['status', 'league', 'dateFrom', 'dateTo', 'hours', 'team', 'sort', 'order'].forEach((param) => {
     const value = url.searchParams.get(param)
     if (value !== null) {
       params[param] = value
@@ -168,7 +229,7 @@ export function validateQueryParams(
   const errors: ValidationError[] = []
 
   // Validate pagination
-  if (params.page && (params.page < 1 || params.page > 1000)) {
+  if (params.page !== undefined && (params.page < 1 || params.page > 1000)) {
     errors.push({
       field: 'page',
       message: 'Page must be between 1 and 1000',
@@ -191,6 +252,53 @@ export function validateQueryParams(
       field: 'status',
       message: `Status must be one of: ${validStatuses.join(', ')}`,
       code: 'INVALID_STATUS',
+    })
+  }
+
+  // Validate sort field
+  const validSortFields = ['date', 'league', 'status']
+  if (params.sort && !validSortFields.includes(params.sort)) {
+    errors.push({
+      field: 'sort',
+      message: `Sort must be one of: ${validSortFields.join(', ')}`,
+      code: 'INVALID_SORT',
+    })
+  }
+
+  // Validate order
+  const validOrders = ['asc', 'desc']
+  if (params.order && !validOrders.includes(params.order)) {
+    errors.push({
+      field: 'order',
+      message: `Order must be one of: ${validOrders.join(', ')}`,
+      code: 'INVALID_ORDER',
+    })
+  }
+
+  // Validate date format (YYYY-MM-DD)
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+  if (params.dateFrom && !dateRegex.test(params.dateFrom)) {
+    errors.push({
+      field: 'dateFrom',
+      message: 'dateFrom must be in YYYY-MM-DD format',
+      code: 'INVALID_DATE_FORMAT',
+    })
+  }
+
+  if (params.dateTo && !dateRegex.test(params.dateTo)) {
+    errors.push({
+      field: 'dateTo',
+      message: 'dateTo must be in YYYY-MM-DD format',
+      code: 'INVALID_DATE_FORMAT',
+    })
+  }
+
+  // Validate team name length
+  if (params.team && (params.team.length < 2 || params.team.length > 100)) {
+    errors.push({
+      field: 'team',
+      message: 'Team name must be between 2 and 100 characters',
+      code: 'INVALID_TEAM_LENGTH',
     })
   }
 
